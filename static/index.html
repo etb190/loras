@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Loras - Civitai Metadata Catalog</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%93%9A%3C/text%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="/static/css/style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark">L</span>
+      <div class="brand-text">
+        <h1>Loras</h1>
+        <span class="brand-sub">Civitai metadata catalog &middot; no downloads, no ComfyUI</span>
+      </div>
+    </div>
+    <div class="topbar-actions">
+      <input id="globalSearch" class="search-input" type="search" placeholder="Search name, creator, tag, trigger word..." autocomplete="off" />
+      <button id="exportBtn" class="btn ghost" title="Download all metadata as JSON">Export</button>
+      <button id="tokenBtn" class="btn ghost" title="Civitai API token settings">Token: <span id="tokenState">off</span></button>
+      <button id="addLinksBtn" class="btn primary">+ Add links</button>
+    </div>
+  </header>
+
+  <main class="page">
+    <section id="filtersBar" class="filters-bar hidden">
+      <label class="filter-field">
+        <span>Type</span>
+        <select id="filterType"><option value="">All</option></select>
+      </label>
+      <label class="filter-field">
+        <span>Base model</span>
+        <select id="filterBaseModel"><option value="">All</option></select>
+      </label>
+      <span id="resultCount" class="result-count"></span>
+      <span class="spacer"></span>
+      <span id="statsLine" class="stats-line"></span>
+    </section>
+
+    <section id="emptyState" class="empty-state">
+      <div class="empty-card">
+        <h2>Build your metadata catalog</h2>
+        <p>Paste Civitai model links (one per line), optionally add your Civitai API token, and every
+          entry is stored locally: <strong>images, trigger words, versions, files and hashes</strong>.</p>
+        <p class="muted">Nothing is downloaded from Civitai except metadata JSON &mdash; previews stream
+          straight from the Civitai CDN. No ComfyUI installation is required.</p>
+        <button class="btn primary" id="emptyAddBtn">+ Add your first links</button>
+      </div>
+    </section>
+
+    <section id="cardGrid" class="card-grid"></section>
+  </main>
+
+  <!-- Add links modal -->
+  <div id="fetchModal" class="modal-backdrop hidden">
+    <div class="modal">
+      <div class="modal-head">
+        <h2>Add Civitai links</h2>
+        <button class="icon-btn" data-close="fetchModal" aria-label="Close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <textarea id="linksInput" rows="7" placeholder="https://civitai.com/models/12345&#10;https://civitai.com/models/67890/some-slug?modelVersionId=11111&#10;https://civitai.com/model-versions/22222"></textarea>
+        <p class="hint">One link per line. Model pages, version links and bare numeric ids all work.
+          Existing entries are updated in place.</p>
+        <div class="token-row">
+          <input id="fetchToken" type="password" placeholder="Civitai API token (optional)" autocomplete="off" />
+          <label class="check"><input type="checkbox" id="rememberToken" checked /> remember on server</label>
+        </div>
+        <p class="hint">A token is needed for mature or early-access models and helps with rate limits.
+          Get one at civitai.com &rarr; Account settings &rarr; API keys.</p>
+        <div id="fetchProgress" class="fetch-progress hidden"></div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn ghost" data-close="fetchModal">Cancel</button>
+        <button id="fetchBtn" class="btn primary">Fetch metadata</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Detail modal -->
+  <div id="detailModal" class="modal-backdrop hidden">
+    <div class="modal wide">
+      <div class="modal-head">
+        <h2 id="detailTitle">Model</h2>
+        <div class="modal-head-actions">
+          <a id="detailCivitaiLink" class="btn ghost small" href="#" target="_blank" rel="noopener">Open on Civitai</a>
+          <button class="icon-btn" data-close="detailModal" aria-label="Close">&times;</button>
+        </div>
+      </div>
+      <div class="modal-body" id="detailBody"></div>
+    </div>
+  </div>
+
+  <!-- Token modal -->
+  <div id="tokenModal" class="modal-backdrop hidden">
+    <div class="modal">
+      <div class="modal-head">
+        <h2>Civitai API token</h2>
+        <button class="icon-btn" data-close="tokenModal" aria-label="Close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p class="hint">The token is optional. It is used only to read metadata for mature or
+          early-access models and to reduce rate limiting. Requests to Civitai carry the token as a
+          <code>Authorization: Bearer</code> header; nothing else is ever sent.</p>
+        <input id="tokenInput" type="password" placeholder="Paste token (API key)" autocomplete="off" />
+        <div class="token-modal-actions">
+          <label class="check"><input type="checkbox" id="tokenStoreCheck" /> store on server (data/settings.json)</label>
+          <button id="tokenRemoveBtn" class="btn danger ghost small">Remove stored token</button>
+        </div>
+        <p id="tokenStatusLine" class="hint"></p>
+      </div>
+      <div class="modal-foot">
+        <button class="btn ghost" data-close="tokenModal">Close</button>
+        <button id="tokenSaveBtn" class="btn primary">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toasts" class="toasts"></div>
+
+  <script src="/static/js/app.js"></script>
+</body>
+</html>

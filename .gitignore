@@ -1,0 +1,17 @@
+# Local data: fetched metadata and settings (never commit tokens)
+data/
+*.tmp
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.coverage
+
+# Editors / OS
+.idea/
+.vscode/
+.DS_Store
